@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 3 - Z340 TRAC3</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+            color: #00FF00;
+        }
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: -1;
+        }
+        .matrix-rain canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .container-fluid {
+            position: relative;
+            color: #00FF00;
+        }
+        .terminal {
+            background-color: black;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #00FF00;
+            box-shadow: 0px 0px 10px #00FF00;
+            height: 600px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .terminal-input input {
+            background-color: black;
+            color: #00FF00;
+            border: none;
+            outline: none;
+            width: 40%;
+        }
+        .tip-box {
+            padding: 10px;
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00FF00;
+            margin-top: 15px;
+        }
+        .terminal-section, .story-section {
+            display: flex;
+        }
+        .tips-left, .tips-right {
+            width: 15%;
+            padding: 10px;
+            color: #00FF00;
+            background-color: rgba(0, 255, 0, 0.05);
+            font-size: 0.9rem;
+        }
+        .terminal-container {
+            width: 70%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-rain">
+        <canvas id="matrix"></canvas>
+    </div>
+
+    <div class="container-fluid terminal-container">
+        <div class="row story-section mb-3">
+            <div class="col-12">
+                <h3 class="story-title">Z340 TRAC3 Level 3 - Connect to FTP Server</h3>
+                <p class="story-description">
+                    Your next mission is to connect to an FTP server running on IP address <strong>192.168.1.200</strong>.
+                    Navigate through the directories to find the file <code>imp.txt</code>, which contains the username for an SSH connection.
+                </p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Use the following command to connect to the FTP server: <code>ftp 192.168.1.200</code><br>
+                    After connecting, you can navigate using the commands <strong>ls</strong> to list files and <strong>cd</strong> to change directories.
+                </div>
+            </div>
+        </div>
+
+        <div class="row terminal-section">
+            <div class="tips-left">
+                <h5>Quick Commands</h5>
+                <ul>
+                    <li><strong>ftp</strong> - Connect to FTP server</li>
+                    <li><strong>ls</strong> - List directory contents</li>
+                    <li><strong>cd</strong> - Change directory</li>
+                    <li><strong>cat</strong> - View file contents</li>
+                </ul>
+            </div>
+            
+            <div class="col-6">
+                <div class="terminal">
+                    <div id="terminal-output"></div>
+                    <div class="terminal-input">
+                        <span class="prompt">user@Z340TRAC3:~$</span>
+                        <input type="text" id="command-input" autocomplete="off" autofocus>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tips-right">
+                <h5>Hints</h5>
+                <ul>
+                    <li>Use <strong>ls</strong> to see what's inside directories.</li>
+                    <li>Look for <code>imp.txt</code> inside one of the directories.</li>
+                    <li>Use <strong>cat imp.txt</strong> to read the file contents.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputField = document.getElementById('command-input');
+            const terminalOutput = document.getElementById('terminal-output');
+
+            let connectedToFTP = false;
+            let currentDirectory = '/';
+            const directories = {
+                '/': ['home', 'var', 'etc'],
+                '/home': ['user', 'guest'],
+                '/home/user': ['imp.txt'],
+                '/var': [],
+                '/etc': []
+            };
+
+            const fileContents = {
+                '/home/user/imp.txt': '192.168.0.101 victor321 ###################'
+            };
+
+            inputField.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    const command = inputField.value.trim();
+                    inputField.value = '';
+                    displayCommand(command);
+                    processCommand(command);
+                }
+            });
+
+            function displayCommand(command) {
+                typeCommand(`<div><span class="prompt">user@Z340TRAC3:~$</span> ${escapeHtml(command)}</div>`);
+            }
+
+            function processCommand(command) {
+                if (!connectedToFTP) {
+                    if (command === 'ftp 192.168.1.200') {
+                        connectedToFTP = true;
+                        typeCommand('<div>Connected to 192.168.1.200</div>');
+                        typeCommand('<div>220 Welcome to the FTP server</div>');
+                        typeCommand('<div>Name (192.168.1.200:user):</div>');
+                    } else {
+                        typeCommand('<div>Error: Please connect to the FTP server first using <code>ftp 192.168.1.200</code></div>');
+                    }
+                } else {
+                    handleFTPCommands(command);
+                }
+
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+
+            function handleFTPCommands(command) {
+                if (command === 'ls') {
+                    const files = directories[currentDirectory];
+                    typeCommand(`<div>${files.join(' ')}</div>`);
+                } else if (command.startsWith('cd ')) {
+                    const newDir = command.split(' ')[1];
+                    const fullPath = currentDirectory === '/' ? `/${newDir}` : `${currentDirectory}/${newDir}`;
+                    if (directories[fullPath]) {
+                        currentDirectory = fullPath;
+                        typeCommand(`<div>Changed directory to ${fullPath}</div>`);
+                    } else {
+                        typeCommand('<div>Error: Directory not found</div>');
+                    }
+                } else if (command.startsWith('cat ')) {
+                    const file = command.split(' ')[1];
+                    const fullPath = `${currentDirectory}/${file}`;
+                    if (fileContents[fullPath]) {
+                        typeCommand(`<div>${escapeHtml(fileContents[fullPath])}</div>`);
+                    } else {
+                        typeCommand('<div>Error: File not found</div>');
+                    }
+                } else {
+                    typeCommand('<div>Error: Command not recognized</div>');
+                }
+            }
+
+            function typeCommand(text) {
+                terminalOutput.innerHTML += text;
+            }
+
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+        });
+
+        // Matrix Rain Effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+    
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    
+        const matrix = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+    
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+            ctx.fillStyle = '#0F0';
+            ctx.font = `${fontSize}px monospace`;
+    
+            drops.forEach((y, x) => {
+                const text = matrix[Math.floor(Math.random() * matrix.length)];
+                ctx.fillText(text, x * fontSize, y * fontSize);
+    
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[x] = 0;
+                }
+    
+                drops[x]++;
+            });
+        }
+    
+        setInterval(drawMatrix, 33);
+    </script>
+
+</body>
+</html>

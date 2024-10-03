@@ -1,0 +1,50 @@
+/* Terminal Container */
+.terminal-container {
+    background-color: #000000;
+    color: #00FF00;
+    height: 100vh;
+    padding: 20px;
+    font-family: 'Ubuntu Mono', monospace;
+}
+
+/* Story Section */
+.story-section {
+    color: #FF6666;
+}
+
+.tip-box {
+    background-color: #1e1e1e;
+    padding: 10px;
+    margin-top: 10px;
+    border-left: 4px solid #00FF00;
+}
+
+/* Terminal Styling */
+.terminal {
+    background-color: #1e1e1e;
+    padding: 20px;
+    height: 60vh;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.terminal-input {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.prompt {
+    color: #00FF00;
+    margin-right: 5px;
+}
+
+#command-input {
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    width: 100%;
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 1rem;
+    outline: none;
+}

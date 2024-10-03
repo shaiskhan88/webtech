@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 1 - Z340 TRAC3</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+        }
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: -1;
+        }
+        .matrix-rain canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .container-fluid {
+            position: relative;
+            color: green;
+        }
+        .terminal {
+            background-color: black;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #00FF00;
+            box-shadow: 0px 0px 10px green;
+            height: 600px; /* Increased height */
+            overflow-y: auto; /* Allow vertical scrolling if needed */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .terminal-input input {
+            background-color: black;
+            color: green;
+            border: none;
+            outline: none;
+            width: 40%;
+        }
+        .terminal-output div {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .tip-box {
+            padding: 10px;
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00FF00;
+            margin-top: 15px;
+        }
+        /* Add columns for tips and terminal layout */
+        .terminal-section, .story-section {
+            display: flex;
+        }
+        .tips-left, .tips-right {
+            width: 15%;
+            padding: 10px;
+            color: green;
+            background-color: rgba(0, 255, 0, 0.05);
+            font-size: 0.9rem;
+        }
+        .terminal-container {
+            width: 70%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Effect -->
+    <div class="matrix-rain">
+        <canvas id="matrix"></canvas>
+    </div>
+
+    <div class="container-fluid terminal-container">
+        <!-- Game Story and Tip Section -->
+        <div class="row story-section mb-3">
+            <div class="col-12">
+                <h3 class="story-title">Z340 TRAC3 Level 1 - Solve the Murder Case</h3>
+                <p class="story-description">
+                    You have been tasked with solving a murder case. The victim's remote computer has been discovered. 
+                    You need to hack into it using the IP address <strong>192.168.1.100</strong>. Start by scanning the victim's IP 
+                    for open ports using the tool <strong>nmap</strong>.
+                </p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Use the following command to scan the IP: <code>nmap 192.168.1.100</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Interface with Tips on Left and Right -->
+        <div class="row terminal-section">
+            <div class="tips-left">
+                <h5>Quick Commands</h5>
+                <ul>
+                    <li><strong>nmap</strong> - Network mapper</li>
+                    <li><strong>ssh</strong> - Secure Shell</li>
+                    <li><strong>ping</strong> - Test network connection</li>
+                </ul>
+            </div>
+            
+            <div class="col-6">
+                <div class="terminal">
+                    <div id="terminal-output"></div>
+                    <div class="terminal-input">
+                        <span class="prompt">user@Z340TRAC3:~$</span>
+                        <input type="text" id="command-input" autocomplete="off" autofocus>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tips-right">
+                <h5>Hints</h5>
+                <ul>
+                    <li>Try scanning the open ports first.</li>
+                    <li>Use <strong>nmap</strong> to discover more about the network.</li>
+                    <li>What does port 22 suggest?</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="{{ url_for('static', filename='js/level1.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputField = document.getElementById('command-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        inputField.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const command = inputField.value.trim();
+                inputField.value = '';
+                displayCommand(command);  // Show the command in the terminal
+                processCommand(command);
+            }
+        });
+
+        function displayCommand(command) {
+            // Display the command that the user types in the terminal
+            typeCommand(`<div><span class="prompt">user@Z340TRAC3:~$</span> ${escapeHtml(command)}</div>`);
+        }
+
+        function processCommand(command) {
+            if (command === 'nmap 192.168.1.100') {
+                simulateNmap();
+            } else {
+             
+            }
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function simulateNmap() {
+            const scanOutput = [
+                'Starting Nmap 7.80 ( https://nmap.org ) at 2024-10-01 12:00',
+                'Nmap scan report for 192.168.1.100',
+                'Host is up (0.0011s latency).',
+                'Not shown: 996 closed ports',
+                'PORT    STATE SERVICE',
+                '22/tcp  open  ssh',
+                '80/tcp  open  http',
+                '443/tcp open  https',
+                'MAC Address: 00:14:22:01:23:45 (Unknown)',
+                'Nmap done: 1 IP address (1 host up) scanned in 2.34 seconds'
+            ];
+
+            scanOutput.forEach((line, index) => {
+                
+                setTimeout(() => {
+                    console.log("this is done");
+                    typeCommand(`<div>${escapeHtml(line)}</div>`);
+                }, index * 500);
+            
+            });
+        }
+
+        function typeCommand(text) {
+            terminalOutput.innerHTML += text;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    });
+
+    // Matrix Rain Effect
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const matrix = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()';
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#0F0';
+        ctx.font = `${fontSize}px monospace`;
+
+        drops.forEach((y, x) => {
+            const text = matrix[Math.floor(Math.random() * matrix.length)];
+            ctx.fillText(text, x * fontSize, y * fontSize);
+
+            if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[x] = 0;
+            }
+
+            drops[x]++;
+        });
+    }
+
+    setInterval(drawMatrix, 33);
+</script>
+
+    
+</body>
+</html>
